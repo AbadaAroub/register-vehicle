@@ -1,0 +1,441 @@
+
+/**< 
+    * Backup of the old code copied 2021-01-09
+    */
+
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+#define MAX 10
+#define ZERO 0
+#define ascii_id_innan_a 96
+#define ascii_id_efter_z 123
+#define ascii_diff_stor_o_liten 32
+
+struct fordon
+{
+  char fordonstyp[MAX+MAX];
+  char regnummer[MAX];
+  char marke[MAX+MAX];
+};
+typedef struct fordon fordon_t;
+
+struct person
+{
+  char namn[MAX+MAX];
+  int alder;
+  fordon_t fordon;
+};
+typedef struct person person_t;
+
+/**< Funktion deklaration */
+int skrivut(FILE * filnamn);
+void laggtill(FILE * filnamn);
+void tabort(FILE * filnamn, int id);
+int hittaettfordon(FILE * filnamn, int sok);
+void sortera_fordon();
+void Line();
+
+int main(){
+
+int las_fil;
+person_t tmp;
+char s_alt[MAX];
+int alt;
+int id;
+int i;
+int n;
+int t = 1;
+
+  while (alt != 6){
+    /**< Visa en lista med alternativen! */
+    printf("\nVad Vill du göra? :\n 1. Lägg till fordon i registret.\n 2. Ta bort ett fordon från registret.\n 3. Sortera fordon efter Märke.\n 4. Skriv ut information om ett fordon.\n 5. Skriv ut hela fordonregistret.\n 6. Avsluta programmet.\n\n");
+
+    printf("Välj ett alternativ: ");
+    /**< Ta emot användarens val */
+    scanf("%s", s_alt);
+    alt = atoi(s_alt);
+
+    /**< Fil Hantering & Fil läge */
+    FILE * data;
+    if(alt==1){ //fil lägen
+        data = fopen("data.txt", "r");
+    }else if (alt==2) {
+        data = fopen("data.txt", "r");
+    }else if (alt==4) {
+        data = fopen("data.txt", "r");
+    }else if (alt==3) {
+        data = fopen("data.txt", "r");
+    }else if (alt==5) {
+        data = fopen("data.txt", "r");
+    }
+    /**< Fil kontroll */
+    if (!data)
+    {
+        Line();
+        printf("Det gick inte att öppna filen.\n");
+        Line();
+    }
+
+
+    switch (alt)
+    {
+
+    case 1:
+        /**< Lägg till ett nytt fordon till registret */
+        laggtill(data);
+        break;
+
+    case 2:
+        /**< Ta bort ett fordon från registret */
+            /**< Först : Skriv ut alla fordon i registret */
+            id = skrivut(data);
+
+          /**< Börja ta bort ett fordon från registret om registret inte är tom */
+            if(id != ZERO-1){
+                printf("Vilket fordon vill du ta bort?\n");
+                printf("(Välj 0 för att avbryta)\nTa bort fordon nummer: ");
+
+                i = id;
+                fclose(data);
+
+                /**< Låt användaren välja ett Fordon och kontrollera om användaren har valt ett fordon från registret */
+                Ogiltigt_val:
+                scanf("%d", &id);
+
+                Line();
+
+                if( id == ZERO ){
+                    break;
+                }
+                /**< Om Fordonet finns i registret börja borttagningen */
+                if(id < i && id > ZERO) {
+                    tabort(data, id );
+                } else {// add a regret option
+                    /**< Om valet är fel be om ett nytt val */
+                    printf("\nOgiltigt alternativ!\n Försök igen.\n vilken fordon vill du ta bort?  ");
+                    goto Ogiltigt_val;
+                }
+            }
+            Line();
+        break;
+    case 3:
+        /**< Sortera alla fordon i registret efter fordonets märke */
+        sortera_fordon(data);
+
+
+        break;
+    case 4:
+        /**< Skriv ut information om ett spacifikt fordon */
+
+        do{
+          las_fil = fscanf(data,"%s %d %s %s %s",  tmp.namn, &tmp.alder, tmp.fordon.fordonstyp, tmp.fordon.regnummer, tmp.fordon.marke);
+
+          printf("Fordon nr.%d\n", t);
+
+          t++;
+        }while(las_fil != EOF);
+
+       printf("Vilket fordon vill du öppna?\n");
+                printf("öppna fordon nummer : ");
+        scanf("%d", &n);
+        printf("\n");
+        hittaettfordon(data, n);
+
+
+
+
+               // printf("Fordon nr.%d\n Ägaren: %s %d år\n Fordonstyp: %s\n Registreringen: %s\n Fordonsmärke: %s\n\n", id, tmp.namn, tmp.alder, tmp.fordon.fordonstyp, tmp.fordon.regnummer, tmp.fordon.marke);
+
+
+        break;
+    case 5:
+        /**< Skriv ut information om alla Fordon som finns i Registret */
+        skrivut(data);
+        break;
+    case 6:
+        /**< Avsluta programmet */
+        Line();
+        printf("Avslutar...\n");
+        printf("programet har avslutats.\n");
+        Line();
+        break;
+    default:
+        Line();
+        printf("\nOgiltigt alternativ.\nVälj ett annat alternativ:\n\n");
+        Line();
+        break;
+  } /**< Stängning för switch */
+    if(alt != 2 && alt != 6){
+        if(alt < 7){
+            if(alt > ZERO){
+                fclose(data);
+            }
+        }
+    }
+  }/**< Stängning för while loop */
+}/**< Stängning för main */
+
+
+
+
+/**< Funtionerna */
+
+
+int skrivut(FILE * filnamn){
+        /**< Funktionen läser filen och skriver ut alla fordon */
+        int id = 1 ;
+        int las_fil;
+        person_t tmp;
+
+        do{
+          las_fil = fscanf(filnamn,"%s %d %s %s %s", tmp.namn, &tmp.alder, tmp.fordon.fordonstyp, tmp.fordon.regnummer, tmp.fordon.marke);
+          if(las_fil != EOF){
+            if(id == 1){
+                Line();
+                printf("\nAlla fordon i registret.\n\n");
+                Line();
+            }
+            printf("Fordon nr.%d\n Ägaren: %s %d år\n Fordonstyp: %s\n Registreringen: %s\n Fordonsmärke: %s\n\n", id, tmp.namn, tmp.alder, tmp.fordon.fordonstyp, tmp.fordon.regnummer, tmp.fordon.marke);
+            id++;
+          } else if(las_fil == EOF && id == 1){
+                id = -1;
+                Line();
+                printf("\nRegistret är tom.\n");
+                Line();
+          }
+        }while(las_fil != EOF);
+        Line();
+    return id;
+};
+
+
+void laggtill(FILE * filnamn){
+    /**< Funktionen Skriver ett nytt fordon i registret */
+
+        int i = 1 ;
+        int rad;
+        person_t tmp;
+        /**< Räkna antalet rader i filen */
+        do{
+          rad = fscanf(filnamn,"%s %d %s %s %s", tmp.namn, &tmp.alder, tmp.fordon.fordonstyp, tmp.fordon.regnummer, tmp.fordon.marke);
+          if(rad != EOF){
+            i++;
+          }
+        }while(rad != EOF);
+
+        i-=1;
+
+        /**< Stäng filen för läsning och Öppna filen för skrivning */
+        fclose(filnamn);
+        filnamn = fopen("data.txt", "a");
+
+        /**< lägg till nytt fordon om registret är inte fullt */
+        if(i < MAX){
+            /**< Ta imot användarens inmatningar */
+            Line();
+            printf("\nSkriv namnet på bilensägare:");
+            scanf("%s",tmp.namn);
+
+            Line();
+            printf("\nHur gammal är bil ägaren? :");
+            scanf("%d",&tmp.alder);
+
+            Line();
+            printf("\nVilken typ har din fordon? :");
+            scanf("%s",tmp.fordon.fordonstyp);
+
+            Line();
+            printf("\nVad är fordonets registreringsnummer? :");
+            scanf("%s",tmp.fordon.regnummer);
+
+            Line();
+            printf("\nVad är fordonets Märke? :");
+            scanf("%s",tmp.fordon.marke);
+
+            /**< Skriv inmatningarna i filen */
+            fprintf(filnamn, "%s %d %s %s %s\n", tmp.namn, tmp.alder, tmp.fordon.fordonstyp, tmp.fordon.regnummer, tmp.fordon.marke);
+
+            Line();
+            printf("\nRegistreringen lyckades!\n\n");
+            Line();
+        } else {
+            Line();
+            printf("\nRegistret är fullt\nTa bort ett fordon och försök igen!.\n\n");
+            Line();
+        }
+};
+
+void tabort(FILE * filnamn, int id){
+    /**< Funktionen tar bort ett fordon från registret.
+          Detta sker i två steg:
+        * Först kopieras all data förutom datan som ska tas bort till en temp fil.
+        * Sedan raderas data.txt filen och temp filen blir den nya data.txt.
+     */
+        person_t las;
+        int las_fil;
+        int ta_bort_id = 1;
+
+        filnamn = fopen("data.txt", "r");
+        if(!filnamn) {
+            printf("Filen kan inte oppnas\n");
+        }
+        FILE * data_tmp;
+        data_tmp = fopen("tmp.txt", "w");
+
+        if(!data_tmp) {
+            printf("Filen kan inte oppnas\n");
+        }
+
+        do{/**< Läs fil 1 och spara all data i tmp fil */
+            if(ta_bort_id != EOF){
+                las_fil = fscanf(filnamn,"%s %d %s %s %s", las.namn, &las.alder, las.fordon.fordonstyp, las.fordon.regnummer, las.fordon.marke);
+            }
+            if(las_fil != EOF && ta_bort_id != id){
+                fprintf(data_tmp ,"%s %d %s %s %s\n", las.namn, las.alder, las.fordon.fordonstyp, las.fordon.regnummer, las.fordon.marke);
+            } else if (las_fil == EOF && ta_bort_id == 1 && id != 1){
+                printf("\nRegistret är tomt.\n");
+          }
+          ta_bort_id++;
+        }while(las_fil != EOF);
+
+        fclose(data_tmp);
+        fclose(filnamn);
+        /**< Ta bort den gamla filen */
+        if (remove("data.txt") == ZERO){
+
+        }else{
+            printf("Error (Filen kunde inte tas bort).\n");
+        }
+        /**< Ändra namn på temp filen */
+        rename("tmp.txt", "data.txt");
+
+        printf("\nBorttagningen lyckades.\nDu har tagit bort Fordon nr.%d\n\n", id);
+};
+  int hittaettfordon(FILE * filnamn,int sok){
+/**< Funktionen läser filen och skriver ut alla fordon */
+        int id = 1 ;
+        int las_fil;
+        person_t tmp;
+        fclose(filnamn);
+        filnamn = fopen("data.txt", "r");
+
+        do{
+          las_fil = fscanf(filnamn,"%s %d %s %s %s", tmp.namn, &tmp.alder, tmp.fordon.fordonstyp, tmp.fordon.regnummer, tmp.fordon.marke);
+          if(las_fil != EOF){
+
+            if(sok == id){
+            printf("Fordon nr.%d\n Ägaren: %s %d år\n Fordonstyp: %s\n Registreringen: %s\n Fordonsmärke: %s\n\n", id, tmp.namn, tmp.alder, tmp.fordon.fordonstyp, tmp.fordon.regnummer, tmp.fordon.marke);
+            }
+            id++;
+          } else if(las_fil == EOF && id == 1){
+                id = -1;
+                printf("\nRegistret är tom.\n");
+          }
+        }while(las_fil != EOF);
+    return id;
+};
+
+void sortera_fordon(FILE * data){
+ /**< Funktionen jämför alla fordons märke i filen och sorterar alla fordon */
+        int sort = ZERO;
+        int id = ZERO;
+        int las_fil;
+
+        person_t tmp;
+        person_t marke_sortering[MAX];
+
+
+
+
+         do{
+          las_fil = fscanf(data,"%s %d %s %s %s", marke_sortering[sort].namn, &marke_sortering[sort].alder, marke_sortering[sort].fordon.fordonstyp, marke_sortering[sort].fordon.regnummer, marke_sortering[sort].fordon.marke);
+          if(las_fil != EOF){
+
+            sort++;
+
+
+          } else if(las_fil == EOF && sort == ZERO){
+            id = -1;
+          }
+        }while(las_fil != EOF);
+
+        fclose(data);
+
+        if(id != -1){
+             for(int i = ZERO; i < sort ;i++){
+                if(marke_sortering[i].fordon.marke[ZERO] > ascii_id_innan_a && marke_sortering[i].fordon.marke[ZERO] < ascii_id_efter_z){
+                    marke_sortering[i].fordon.marke[ZERO] -= ascii_diff_stor_o_liten;
+                }
+             }
+
+            for(int j = ZERO;j < sort;j++){
+                for(int i = ZERO; i < sort ;i++){
+
+
+                    if(marke_sortering[i].fordon.marke[ZERO] > marke_sortering[i+1].fordon.marke[ZERO] && i < sort - 1){
+
+                        // i to tmp
+                        strcpy(tmp.namn, marke_sortering[i].namn);
+                        tmp.alder = marke_sortering[i].alder;
+                        strcpy(tmp.fordon.fordonstyp, marke_sortering[i].fordon.fordonstyp);
+                        strcpy(tmp.fordon.regnummer, marke_sortering[i].fordon.regnummer);
+                        strcpy(tmp.fordon.marke, marke_sortering[i].fordon.marke);
+
+                        // i+1 to i
+                        strcpy(marke_sortering[i].namn, marke_sortering[i+1].namn);
+                        marke_sortering[i].alder = marke_sortering[i+1].alder;
+                        strcpy(marke_sortering[i].fordon.fordonstyp, marke_sortering[i+1].fordon.fordonstyp);
+                        strcpy(marke_sortering[i].fordon.regnummer, marke_sortering[i+1].fordon.regnummer);
+                        strcpy(marke_sortering[i].fordon.marke, marke_sortering[i+1].fordon.marke);
+
+                        // tmp to i+1
+                        strcpy(marke_sortering[i+1].namn, tmp.namn);
+                        marke_sortering[i+1].alder = tmp.alder;
+                        strcpy(marke_sortering[i+1].fordon.fordonstyp, tmp.fordon.fordonstyp);
+                        strcpy(marke_sortering[i+1].fordon.regnummer, tmp.fordon.regnummer);
+                        strcpy(marke_sortering[i+1].fordon.marke, tmp.fordon.marke);
+                    }
+
+
+                }
+            }
+            data = fopen("data.txt", "w");
+
+            for(int i = ZERO; i < sort ;i++){
+                    fprintf(data,"%s %d %s %s %s\n", marke_sortering[i].namn, marke_sortering[i].alder, marke_sortering[i].fordon.fordonstyp, marke_sortering[i].fordon.regnummer, marke_sortering[i].fordon.marke);
+            }
+            Line();
+            printf("\n\nSortering lyckades !!\nVälj alternativ 5 för att se sorterad register. \n\n");
+            Line();
+        } else {
+        Line();
+        printf("\nRegistret är TOM!!\nLägg till några fordon och försök igen!\n\n");
+        Line();
+        }
+
+};
+
+void Line(){
+
+    printf("\n----------------------------------------------------------\n");
+
+}
+
+
+/**
+*Demo data
+**********
+Ahmad 20 Bil ABC123 BMW
+Mohammad 15 Moped SWR542 Yamahaa
+Abda 90 Flygplan FLY999 SAS
+Nour 5 Båt bat564 GTA
+Hanna 16 Moped qwe523 Framoped
+JonDoe 30 Bil EWS658 volvo
+Alex 62 Bil BCL903 Mercides
+Patrik 17 Cyckel CAT djur
+Khaled 24 Bil JWT765 Lamborgini
+
+**********
+
+*/

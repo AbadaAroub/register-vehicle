@@ -1,0 +1,8 @@
+output: 	main.o library.o
+			gcc -o main.o library.o
+
+main.o: 	main.c library.h
+			gcc -c main.c
+
+library.o: 	library.c library.h
+			gcc -c library.c

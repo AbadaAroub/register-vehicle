@@ -1,0 +1,345 @@
+/**< 
+    * Backup of the old code copied 2021-01-17
+    */
+
+/**< FordonsRegister - Programmet skriven av Ahmad Abo Warda & Abada Aroub */
+
+/**< Header filer */
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+#define MAX 10
+#define ZERO 0
+#define ONE 1
+#define ascii_id_innan_a 96
+#define ascii_id_efter_z 123
+#define ascii_diff_stor_o_liten 32
+
+/**< Structar / objekt*/
+struct fordon
+{
+  char fordonstyp[ MAX + MAX ];
+  char regnummer[ MAX ];
+  char marke[ MAX + MAX ];
+};
+typedef struct fordon fordon_t;
+
+struct person
+{
+  char namn[ MAX + MAX ];
+  int alder;
+  fordon_t fordon;
+};
+typedef struct person person_t;
+
+/**< Funktion deklaration */
+void spara_fil( person_t FordonReg[ MAX ] , int antal_fordon );
+int ladda_data( person_t FordonReg[ MAX ] , FILE * data );
+void skrivut( int antal_fordon , person_t FordonReg[ MAX ] );
+int laggtill( person_t FordonReg[ MAX ] , int antal_fordon );
+int tabort( person_t FordonReg[ MAX ] , int antal_fordon , int id );
+void hittaettfordon( int antal_fordon , int sfordon , person_t FordonReg[ MAX ] );
+void sortera_fordon( person_t marke_sortering[ MAX ] , int id );
+void Line();
+
+/**< Programmets Main */
+int main( ){
+
+    /**< Variabler deklarationer  */
+    person_t tmp , FordonReg[ MAX ];
+    char s_alt[ MAX ] , s_sfordon[ MAX ] , s_id[ MAX ];
+    int alt , id , i , n , antal_fordon = ZERO , t = ZERO , sfordon;
+    FILE * data;
+
+    /**< Ladda Datan från filen och beräkna antalet fordon som finns i Registret */
+    antal_fordon = ladda_data( FordonReg , data );
+
+    /**< Varning Header */
+    Line();
+    if( antal_fordon == ZERO ){
+        printf("Varning!!\nRegistret är Tomt.");
+    }else if( antal_fordon == MAX ){
+        printf("Varning!!\nRegistret är fullt.");
+    }else {
+        printf("DVGA01 - Labboration 4 - 2021\nAhmad Abo Warda & Abada Aroub");
+    }
+    Line();
+
+    /**< Programmet startar här */
+    while ( alt != 6 ){
+
+        /**< Visa en meny med tillgängliga alternativ! */
+        printf("\nVälj ett alternativ :\n 1. Lägg till ett fordon i Registret.\n 2. Ta bort ett fordon från Registret.\n 3. Sortera Registret efter Fordons Märke.\n 4. Skriv ut information om ett specifikt Fordon.\n 5. Skriv ut hela Registret.\n 6. Avsluta programmet.\n\nVänligen välj ett alternativ: ");
+
+        /**< Ta emot användarens val */
+        scanf("%s" , s_alt);
+        alt = atoi( s_alt );
+
+        /**< Switch satsen */
+        switch ( alt )
+        {
+            /**< Case 1. Lägg till ett nytt fordon till registret */
+            case 1:
+                antal_fordon = laggtill( FordonReg , antal_fordon );
+                break;
+
+            /**< Case 2. Ta bort ett fordon från registret */
+            case 2:
+                /**< skriv ut tillgängliga fordons nummer */
+                for( i = 0 ; i < antal_fordon ; i++ ){
+                    printf("Fordon nr.%d\n" , i + 1 );
+                }
+
+                /**< Välj ett fordon att tabort */
+                tabortigen:
+                printf("Vilken fordon vill du ta bort?\nTa bort fordon nr.");
+                scanf( "%s" , s_id );
+                id = atoi( s_id );
+                if( antal_fordon != ZERO && id <= antal_fordon && id > ZERO ){
+                    antal_fordon = tabort( FordonReg , antal_fordon , id );
+                } else {
+                    Line();
+                    printf("Ogitigt! \nFörsök igen.\n");
+                    Line();
+                    goto tabortigen;
+                }
+                break;
+
+            /**< Case 3. Sortera alla fordon i registret efter fordonets märke */
+            case 3:
+                sortera_fordon( FordonReg , antal_fordon );
+                break;
+
+            /**< Case 4. Skriv ut information om ett spacifikt fordon i Registret*/
+            case 4:
+                /**< Visa tillgängliga fordon */
+                Line();
+                for( i = ZERO ; i < antal_fordon ; i++ ){
+                    printf("Fordon nr.%d\n" , i + ONE );
+                }
+                Line();
+
+                /**< Välj ett fordon för att visa */
+                spacefikfordon:
+                printf("Vilket fordon vill du se?\n");
+                scanf( "%s" , s_sfordon );
+                sfordon = atoi( s_sfordon );
+                if( sfordon != ZERO ){
+                    Line();
+                    hittaettfordon( antal_fordon , sfordon, FordonReg );
+                    Line();
+                } else {
+                    Line();
+                    printf("Ogiltigt Val\nFörsök igen!");
+                    Line();
+                    goto spacefikfordon;
+                }
+                break;
+
+            /**< Case 5. Skriv ut information om alla Fordon som finns i Registret */
+            case 5:
+                Line();
+                skrivut( antal_fordon , FordonReg );
+                Line();
+                break;
+
+            /**< Spara datan i filen och Avsluta programmet */
+            case 6:
+                Line();
+                spara_fil( FordonReg , antal_fordon );
+                Line();
+                printf("Avslutar...\n");
+                Line();
+                break;
+
+            /**< Default medelande vid ogitiga val */
+            default:
+                Line();
+                printf("\nOgiltigt alternativ.\nVälj ett annat alternativ:\n\n");
+                Line();
+                break;
+
+        } /**< Stängning för switch */
+    }/**< Stängning för while loop */
+}/**< Stängning för main */
+
+
+
+
+/**< Funtionerna */
+void skrivut( int antal_fordon , person_t FordonReg[ MAX ] ){
+    for( int i = ZERO ; i < antal_fordon ; i++ ){
+        printf("Fordon nr.%d\n Ägaren: %s %d år\n Fordonstyp: %s\n Registreringen: %s\n Fordonsmärke: %s\n\n", i + ONE, FordonReg[ i ].namn , FordonReg[ i ].alder , FordonReg[ i ].fordon.fordonstyp , FordonReg[ i ].fordon.regnummer , FordonReg[ i ].fordon.marke );
+    }
+}
+
+int ladda_data( person_t FordonReg[ MAX ] , FILE * data ){
+    int las_fil;
+    int t = ZERO;
+
+    /**< Ladda Datan från filen till vektorn */
+    data = fopen( "data.txt", "r" );
+    ( !data ) ? printf("Error\nKunde inte öppna filen!.") : ( 0 );
+    do{
+        las_fil = fscanf( data , "%s %d %s %s %s" , FordonReg[ t ].namn , &FordonReg[ t ].alder , FordonReg[ t ].fordon.fordonstyp , FordonReg[ t ].fordon.regnummer , FordonReg[ t ].fordon.marke );
+       if( las_fil != EOF ){
+        t++;
+        }
+    }while( las_fil != EOF );
+    fclose( data );
+    return t;
+};
+
+int laggtill( person_t FordonReg[ MAX ] , int antal_fordon ){
+    /**< Funktionen Skriver ett nytt fordon i registret */
+        char s_alder[ MAX ];
+
+        /**< lägg till nytt fordon om registret är inte fullt */
+        if( antal_fordon < MAX ){
+            /**< Ta imot användarens inmatningar */
+            Line();
+            printf("\nSkriv namnet på bilensägare:");
+            scanf("%s",FordonReg[ antal_fordon ].namn);
+            Line();
+
+            alderigen:
+            printf("\nHur gammal är bil ägaren? :");
+            scanf( "%s" , s_alder );
+            FordonReg[ antal_fordon ].alder = atoi( s_alder );
+            if( FordonReg[ antal_fordon ].alder == 0 ){
+              printf("Ogiltigt!\nFörsök igen");
+              goto alderigen;
+            }
+            Line();
+            printf("\nVilken typ har din fordon? :");
+            scanf( "%s" , FordonReg[ antal_fordon ].fordon.fordonstyp );
+
+            Line();
+            printf("\nVad är fordonets registreringsnummer? :");
+            scanf( "%s" , FordonReg[ antal_fordon ].fordon.regnummer );
+
+            Line();
+            printf( "\nVad är fordonets Märke? :" );
+            scanf( "%s" , FordonReg[ antal_fordon ].fordon.marke );
+
+            Line();
+            printf( "\nRegistreringen lyckades!\n\n" );
+            Line();
+            antal_fordon++ ;
+        } else {
+            Line();
+            printf("\nRegistret är fullt\nTa bort ett fordon och försök igen!.\n\n");
+            Line();
+        }
+            return antal_fordon;
+};
+
+int tabort( person_t FordonReg[ MAX ] , int antal_fordon , int id ){
+    /**< Funktionen tar bort ett fordon från registret.     */
+        person_t tmp[ MAX ];
+        int j = ZERO;
+
+        for( int i = ZERO ; i < MAX; i++ ){
+            if( i != id - ONE ){
+                strcpy( tmp[ j ].namn , FordonReg[ i ].namn );
+                tmp[ j ].alder = FordonReg[ i ].alder;
+                strcpy( tmp[ j ].fordon.fordonstyp , FordonReg[ i ].fordon.fordonstyp );
+                strcpy( tmp[ j ].fordon.regnummer , FordonReg[ i ].fordon.regnummer );
+                strcpy( tmp[ j ].fordon.marke , FordonReg[ i ].fordon.marke);
+                j++;
+            }
+        }
+        for( int i = ZERO ; i < antal_fordon; i++){
+                strcpy( FordonReg[ i ].namn, tmp[ i ].namn );
+                FordonReg[ i ].alder = tmp[ i ].alder ;
+                strcpy( FordonReg[ i ].fordon.fordonstyp , tmp[ i ].fordon.fordonstyp );
+                strcpy( FordonReg[ i ].fordon.regnummer , tmp[ i ].fordon.regnummer );
+                strcpy( FordonReg[ i ].fordon.marke , tmp[ i ].fordon.marke );
+            }
+        antal_fordon -= ONE ;
+        Line();
+        printf("Borttagningen lyckades.");
+        Line();
+    return antal_fordon;
+};
+  void hittaettfordon( int antal_fordon , int sfordon , person_t FordonReg[ MAX ] ){
+        /**< Funktionen läser filen och skriver ut alla fordon */
+        for( int i = ZERO ; i < antal_fordon ; i++ ){
+            if( i + ONE == sfordon ){
+                printf("Fordon nr.%d\n Ägaren: %s %d år\n Fordonstyp: %s\n Registreringen: %s\n Fordonsmärke: %s\n", i + ONE, FordonReg[i].namn, FordonReg[i].alder, FordonReg[i].fordon.fordonstyp, FordonReg[i].fordon.regnummer, FordonReg[i].fordon.marke);
+            }
+        }
+};
+
+void sortera_fordon( person_t marke_sortering[ MAX ] , int id ){
+        /**< Funktionen jämför alla fordons märke och sorterar alla fordon */
+        person_t tmp;
+
+        if( id != ZERO ){
+            for( int i = ZERO ; i < id ; i++ ){
+                if(marke_sortering[ i ].fordon.marke[ ZERO ] > ascii_id_innan_a && marke_sortering[ i ].fordon.marke[ ZERO ] < ascii_id_efter_z ){
+                    marke_sortering[ i ].fordon.marke[ ZERO ] -= ascii_diff_stor_o_liten;
+                }
+             }
+            for( int j = ZERO ; j < id ; j++ ){
+                for( int i = ZERO ; i < id ; i++ ){
+                    if(marke_sortering[ i ].fordon.marke[ ZERO ] > marke_sortering[ i + ONE ].fordon.marke[ ZERO ] && i < id - ONE ){
+                        // i to tmp
+                        strcpy( tmp.namn , marke_sortering[ i ].namn );
+                        tmp.alder = marke_sortering[ i ].alder;
+                        strcpy( tmp.fordon.fordonstyp , marke_sortering[ i ].fordon.fordonstyp );
+                        strcpy( tmp.fordon.regnummer , marke_sortering[ i ].fordon.regnummer );
+                        strcpy( tmp.fordon.marke , marke_sortering[ i ].fordon.marke );
+                        // i+1 to i
+                        strcpy( marke_sortering[ i ].namn , marke_sortering[ i + ONE ].namn );
+                        marke_sortering[ i ].alder = marke_sortering[ i + ONE ].alder;
+                        strcpy( marke_sortering[ i ].fordon.fordonstyp , marke_sortering[ i + ONE ].fordon.fordonstyp );
+                        strcpy( marke_sortering[ i ].fordon.regnummer , marke_sortering[ i + ONE ].fordon.regnummer );
+                        strcpy( marke_sortering[ i ].fordon.marke , marke_sortering[ i + ONE ].fordon.marke );
+                        // tmp to i+1
+                        strcpy( marke_sortering[ i + ONE ].namn , tmp.namn );
+                        marke_sortering[ i + ONE ].alder = tmp.alder;
+                        strcpy( marke_sortering[ i + ONE ].fordon.fordonstyp , tmp.fordon.fordonstyp );
+                        strcpy( marke_sortering[ i + ONE ].fordon.regnummer , tmp.fordon.regnummer );
+                        strcpy( marke_sortering[ i + ONE ].fordon.marke , tmp.fordon.marke );
+                    }
+                }
+            }
+        }
+            Line();
+            printf("Sorteringen lyckades.\nTryck 5 för att se den sorterade registret!");
+            Line();
+};
+
+void Line(){
+    printf("\n----------------------------------------------------------\n");
+}
+
+void spara_fil( person_t FordonReg[ MAX ] , int antal_fordon ){
+    FILE * data;
+    data = fopen( "data.txt", "w" );
+    printf("Sparar datan...\n %d Fordon har sparats.\n" , antal_fordon);
+     ( !data ) ? printf("Error\nKunde inte öppna filen!.") : ( 0 );
+    for( int t = ZERO ; t < antal_fordon ; t++ ){
+        fprintf( data , "%s %d %s %s %s\n" ,  FordonReg[ t ].namn , FordonReg[ t ].alder , FordonReg[ t ].fordon.fordonstyp , FordonReg[ t ].fordon.regnummer , FordonReg[ t ].fordon.marke );
+    }
+    fclose( data );
+}
+
+/**
+*Demo data
+**********
+Ahmad 20 Bil ABC123 BMW
+Mohammad 15 Moped SWR542 Yamahaa
+Abda 90 Flygplan FLY999 SAS
+Nour 5 Båt bat564 GTA
+Hanna 16 Moped qwe523 Framoped
+JonDoe 30 Bil EWS658 volvo
+Alex 62 Bil BCL903 Mercides
+Patrik 17 Cyckel CAT djur
+Khaled 24 Bil JWT765 Lamborgini
+
+**********
+
+*/
+
